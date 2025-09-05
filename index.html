@@ -1,13 +1,884 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Living Abroad Cost Calculator</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
-  </body>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: #1B262C;
+            background: linear-gradient(135deg, #3282B8 0%, #1B262C 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .widget {
+            background: white;
+            border-radius: 1rem;
+            padding: 2rem;
+            box-shadow: 0 20px 25px -5px rgba(27, 38, 44, 0.15);
+            margin-bottom: 2rem;
+        }
+
+        .currency-toggle {
+            display: flex;
+            gap: 0.5rem;
+            justify-content: center;
+            margin-bottom: 2rem;
+        }
+
+        .currency-btn {
+            padding: 0.5rem 1rem;
+            border: 2px solid #D9D9D9;
+            background: white;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+            color: #1B262C;
+        }
+
+        .currency-btn.active {
+            background: #3282B8;
+            color: white;
+            border-color: #3282B8;
+        }
+
+        .country-selector {
+            margin-bottom: 2rem;
+        }
+
+        .country-selector h2 {
+            text-align: center;
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+            color: #1B262C;
+        }
+
+        .slider-container {
+            margin-bottom: 1.5rem;
+        }
+
+        .slider-label {
+            text-align: center;
+            color: #1B262C;
+            font-size: 0.875rem;
+            margin-bottom: 0.5rem;
+            opacity: 0.7;
+        }
+
+        .slider-track {
+            position: relative;
+            height: 4px;
+            background: #D9D9D9;
+            border-radius: 2px;
+            margin-bottom: 1.5rem;
+        }
+
+        .slider-progress {
+            height: 100%;
+            background: #3282B8;
+            border-radius: 2px;
+            transition: width 0.3s ease;
+        }
+
+        .slider-thumb {
+            position: absolute;
+            top: -6px;
+            width: 16px;
+            height: 16px;
+            background: #FFC300;
+            border-radius: 50%;
+            transition: left 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .countries-grid {
+            display: flex;
+            justify-content: space-between;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .country-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 0.75rem;
+            border: 2px solid transparent;
+            background: #BBE1FA;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            min-width: 80px;
+            flex: 1;
+            color: #1B262C;
+        }
+
+        .country-btn:hover {
+            transform: scale(1.05);
+            background: #3282B8;
+            color: white;
+        }
+
+        .country-btn.active {
+            background: #1B262C;
+            color: white;
+            transform: scale(1.1);
+            box-shadow: 0 4px 12px rgba(27, 38, 44, 0.3);
+        }
+
+        .country-flag {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .country-name {
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-align: center;
+            max-width: 4rem;
+        }
+
+        .keyboard-hint {
+            text-align: center;
+            color: #1B262C;
+            font-size: 0.875rem;
+            margin-top: 1rem;
+            opacity: 0.6;
+        }
+
+        .baseline {
+            background: linear-gradient(135deg, #BBE1FA 0%, #D9D9D9 100%);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin-bottom: 2rem;
+            border-left: 4px solid #3282B8;
+        }
+
+        .baseline h3 {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+            font-size: 1.1rem;
+            color: #1B262C;
+        }
+
+        .baseline-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 1rem;
+            font-size: 0.875rem;
+        }
+
+        .baseline-item {
+            text-align: center;
+        }
+
+        .baseline-label {
+            color: #1B262C;
+            margin-bottom: 0.25rem;
+            opacity: 0.7;
+        }
+
+        .baseline-value {
+            font-weight: 600;
+            color: #1B262C;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .metric-card {
+            background: white;
+            border: 1px solid #D9D9D9;
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            box-shadow: 0 1px 3px rgba(27, 38, 44, 0.1);
+            transition: all 0.3s ease;
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        .metric-card.animate-in {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .metric-card:hover {
+            box-shadow: 0 4px 12px rgba(27, 38, 44, 0.15);
+            border-color: #3282B8;
+        }
+
+        .metric-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: #1B262C;
+        }
+
+        .metric-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: #1B262C;
+        }
+
+        .metric-secondary {
+            font-size: 0.875rem;
+            color: #1B262C;
+            margin-bottom: 0.5rem;
+            opacity: 0.6;
+        }
+
+        .metric-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.5rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            opacity: 0;
+            transform: scale(0.8);
+            transition: all 0.3s ease;
+        }
+
+        .metric-badge.animate-in {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .badge-cheaper {
+            background: #BBE1FA;
+            color: #1B262C;
+        }
+
+        .badge-expensive {
+            background: #FFC300;
+            color: #1B262C;
+        }
+
+        .badge-same {
+            background: #D9D9D9;
+            color: #1B262C;
+        }
+
+        .overall-card {
+            grid-column: 1 / -1;
+            background: linear-gradient(135deg, #BBE1FA 0%, #3282B8 100%);
+            border: 1px solid #3282B8;
+            position: relative;
+            overflow: hidden;
+            color: white;
+        }
+
+        .overall-card.cheaper {
+            background: linear-gradient(135deg, #BBE1FA 0%, #3282B8 100%);
+            border-color: #3282B8;
+        }
+
+        .overall-card.expensive {
+            background: linear-gradient(135deg, #FFC300 0%, #1B262C 100%);
+            border-color: #FFC300;
+        }
+
+        .overall-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .overall-text {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .overall-subtitle {
+            font-size: 0.875rem;
+            opacity: 0.8;
+            margin-top: 0.25rem;
+        }
+
+        .overall-flag {
+            font-size: 2.5rem;
+            transition: transform 0.5s ease;
+        }
+
+        .overall-flag.animate {
+            transform: rotate(360deg);
+        }
+
+        .footer {
+            text-align: center;
+            color: #1B262C;
+            font-size: 0.875rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            opacity: 0.7;
+        }
+
+        .info-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0.25rem;
+            border-radius: 50%;
+            transition: background 0.2s;
+            position: relative;
+            color: #3282B8;
+        }
+
+        .info-btn:hover {
+            background: #BBE1FA;
+        }
+
+        .info-icon {
+            width: 1rem;
+            height: 1rem;
+            stroke: currentColor;
+            fill: none;
+            stroke-width: 2;
+        }
+
+        .tooltip {
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1B262C;
+            color: white;
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            font-size: 0.75rem;
+            width: 16rem;
+            margin-bottom: 0.5rem;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.2s;
+            z-index: 10;
+        }
+
+        .tooltip.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .tooltip::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 4px solid transparent;
+            border-top-color: #1B262C;
+        }
+
+        .tooltip-title {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+            color: #FFC300;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem 0.5rem;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .widget {
+                padding: 1.5rem;
+            }
+
+            .countries-grid {
+                gap: 0.25rem;
+            }
+
+            .country-btn {
+                min-width: 60px;
+                padding: 0.5rem 0.25rem;
+            }
+
+            .country-flag {
+                font-size: 1.5rem;
+            }
+
+            .country-name {
+                font-size: 0.625rem;
+            }
+
+            .metrics-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+
+            .baseline-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>What would your daily costs look like abroad?</h1>
+            <p>Slide east or west to compare prices with the U.S.</p>
+        </div>
+
+        <div class="widget">
+            <div class="currency-toggle">
+                <button class="currency-btn active" data-currency="usd">USD</button>
+                <button class="currency-btn" data-currency="local">Local</button>
+            </div>
+
+            <div class="country-selector">
+                <h2>Select Country</h2>
+                
+                <div class="slider-container">
+                    <div class="slider-label">West ← → East</div>
+                    <div class="slider-track">
+                        <div class="slider-progress"></div>
+                        <div class="slider-thumb"></div>
+                    </div>
+                </div>
+
+                <div class="countries-grid" id="countriesGrid">
+                    <!-- Countries will be populated by JavaScript -->
+                </div>
+
+                <div class="keyboard-hint">Use ← → arrow keys to navigate</div>
+            </div>
+
+            <div class="baseline" id="baseline">
+                <!-- Baseline will be populated by JavaScript -->
+            </div>
+
+            <div class="metrics-grid" id="metricsGrid">
+                <!-- Metrics will be populated by JavaScript -->
+            </div>
+
+            <div class="footer">
+                <div style="position: relative;">
+                    <button class="info-btn" id="infoBtn" aria-label="Information about cost estimates">
+                        <svg class="info-icon" viewBox="0 0 24 24">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <path d="m9,9 0,0 a3,3 0 1,1 6,0c0,2 -3,3 -3,3"></path>
+                            <path d="m9,17 6,0"></path>
+                        </svg>
+                    </button>
+                    <div class="tooltip" id="tooltip">
+                        <div class="tooltip-title">About these estimates</div>
+                        <div>These figures are approximations based on city and country averages. They are intended for relative comparison only and may not reflect actual costs in specific locations or circumstances.</div>
+                    </div>
+                </div>
+                <span>Estimates; city/country averages. For exploration only.</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Cost data
+        const costData = [
+            {
+                country: "United States",
+                flag: "🇺🇸",
+                metrics: {
+                    rent_monthly: { usd: 1744.66, local: { amount: 1744.66, currency: "USD" } },
+                    coffee_cappuccino: { usd: 5.24, local: { amount: 5.24, currency: "USD" } },
+                    sandwich_lunch: { usd: 20.00, local: { amount: 20.00, currency: "USD" } },
+                    haircut_mens: { usd: 44.00, local: { amount: 44.00, currency: "USD" } },
+                    overall_index_vs_us: 0
+                }
+            },
+            {
+                country: "Brazil",
+                flag: "🇧🇷",
+                metrics: {
+                    rent_monthly: { usd: 326.33, local: { amount: 1650.00, currency: "BRL" } },
+                    coffee_cappuccino: { usd: 1.73, local: { amount: 8.75, currency: "BRL" } },
+                    sandwich_lunch: { usd: 5.49, local: { amount: 27.80, currency: "BRL" } },
+                    haircut_mens: { usd: 13.60, local: { amount: 68.75, currency: "BRL" } },
+                    overall_index_vs_us: -61
+                }
+            },
+            {
+                country: "Portugal",
+                flag: "🇵🇹",
+                metrics: {
+                    rent_monthly: { usd: 1046.23, local: { amount: 950.00, currency: "EUR" } },
+                    coffee_cappuccino: { usd: 2.15, local: { amount: 1.95, currency: "EUR" } },
+                    sandwich_lunch: { usd: 12.80, local: { amount: 11.60, currency: "EUR" } },
+                    haircut_mens: { usd: 18.00, local: { amount: 16.35, currency: "EUR" } },
+                    overall_index_vs_us: -37
+                }
+            },
+            {
+                country: "Spain",
+                flag: "🇪🇸",
+                metrics: {
+                    rent_monthly: { usd: 1034.47, local: { amount: 940.00, currency: "EUR" } },
+                    coffee_cappuccino: { usd: 2.30, local: { amount: 2.09, currency: "EUR" } },
+                    sandwich_lunch: { usd: 16.29, local: { amount: 14.80, currency: "EUR" } },
+                    haircut_mens: { usd: 20.00, local: { amount: 18.15, currency: "EUR" } },
+                    overall_index_vs_us: -33
+                }
+            },
+            {
+                country: "Albania",
+                flag: "🇦🇱",
+                metrics: {
+                    rent_monthly: { usd: 625.66, local: { amount: 57500.00, currency: "ALL" } },
+                    coffee_cappuccino: { usd: 1.93, local: { amount: 177.50, currency: "ALL" } },
+                    sandwich_lunch: { usd: 11.91, local: { amount: 1095.00, currency: "ALL" } },
+                    haircut_mens: { usd: 6.50, local: { amount: 597.50, currency: "ALL" } },
+                    overall_index_vs_us: -39
+                }
+            },
+            {
+                country: "Greece",
+                flag: "🇬🇷",
+                metrics: {
+                    rent_monthly: { usd: 758.33, local: { amount: 689.00, currency: "EUR" } },
+                    coffee_cappuccino: { usd: 4.31, local: { amount: 3.92, currency: "EUR" } },
+                    sandwich_lunch: { usd: 13.60, local: { amount: 12.35, currency: "EUR" } },
+                    haircut_mens: { usd: 16.25, local: { amount: 14.75, currency: "EUR" } },
+                    overall_index_vs_us: -28
+                }
+            },
+            {
+                country: "Thailand",
+                flag: "🇹🇭",
+                metrics: {
+                    rent_monthly: { usd: 481.11, local: { amount: 15549.00, currency: "THB" } },
+                    coffee_cappuccino: { usd: 2.11, local: { amount: 68.17, currency: "THB" } },
+                    sandwich_lunch: { usd: 3.09, local: { amount: 99.84, currency: "THB" } },
+                    haircut_mens: { usd: 7.75, local: { amount: 250.50, currency: "THB" } },
+                    overall_index_vs_us: -72
+                }
+            }
+        ];
+
+        // Currency symbols
+        const currencySymbols = {
+            USD: '$',
+            BRL: 'R$',
+            EUR: '€',
+            ALL: 'L',
+            THB: '฿'
+        };
+
+        // State
+        let selectedCountryIndex = 1; // Start with Brazil
+        let showLocalCurrency = false;
+        let showTooltip = false;
+
+        // Format currency
+        function formatCurrency(amount, currency) {
+            const symbol = currencySymbols[currency] || currency;
+            return `${symbol}${amount.toFixed(2)}`;
+        }
+
+        // Calculate delta percentage
+        function calculateDelta(metricKey) {
+            const selectedMetric = costData[selectedCountryIndex].metrics[metricKey];
+            const usMetric = costData[0].metrics[metricKey];
+            return ((selectedMetric.usd - usMetric.usd) / usMetric.usd) * 100;
+        }
+
+        // Get delta color class
+        function getDeltaColorClass(delta) {
+            if (Math.abs(delta) < 1) return 'badge-same';
+            return delta < 0 ? 'badge-cheaper' : 'badge-expensive';
+        }
+
+        // Format delta text
+        function formatDelta(delta) {
+            if (Math.abs(delta) < 1) return 'Same price';
+            const percentage = Math.abs(delta).toFixed(0);
+            return delta < 0 ? `${percentage}% cheaper` : `${percentage}% more`;
+        }
+
+        // Count-up animation
+        function animateValue(element, start, end, duration = 800) {
+            const startTime = performance.now();
+            
+            function update(currentTime) {
+                const elapsed = currentTime - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                
+                // Easing function
+                const easeOutQuart = 1 - Math.pow(1 - progress, 4);
+                const current = start + (end - start) * easeOutQuart;
+                
+                element.textContent = formatCurrency(current, showLocalCurrency && costData[selectedCountryIndex].metrics.rent_monthly.local.currency !== 'USD' 
+                    ? costData[selectedCountryIndex].metrics.rent_monthly.local.currency 
+                    : 'USD');
+                
+                if (progress < 1) {
+                    requestAnimationFrame(update);
+                }
+            }
+            
+            requestAnimationFrame(update);
+        }
+
+        // Update slider position
+        function updateSlider() {
+            const progress = (selectedCountryIndex / (costData.length - 1)) * 100;
+            const progressBar = document.querySelector('.slider-progress');
+            const thumb = document.querySelector('.slider-thumb');
+            
+            progressBar.style.width = `${progress}%`;
+            thumb.style.left = `calc(${progress}% - 8px)`;
+        }
+
+        // Render countries
+        function renderCountries() {
+            const grid = document.getElementById('countriesGrid');
+            grid.innerHTML = '';
+            
+            costData.forEach((country, index) => {
+                const button = document.createElement('button');
+                button.className = `country-btn ${index === selectedCountryIndex ? 'active' : ''}`;
+                button.setAttribute('data-index', index);
+                button.setAttribute('aria-label', `Select ${country.country} for cost comparison`);
+                button.innerHTML = `
+                    <div class="country-flag">${country.flag}</div>
+                    <div class="country-name">${country.country}</div>
+                `;
+                grid.appendChild(button);
+            });
+        }
+
+        // Render baseline
+        function renderBaseline() {
+            const baseline = document.getElementById('baseline');
+            const us = costData[0];
+            
+            baseline.innerHTML = `
+                <h3>
+                    <span style="font-size: 1.5rem;">${us.flag}</span>
+                    United States (Baseline)
+                </h3>
+                <div class="baseline-grid">
+                    <div class="baseline-item">
+                        <div class="baseline-label">Rent (monthly)</div>
+                        <div class="baseline-value">${formatCurrency(us.metrics.rent_monthly.usd, 'USD')}</div>
+                    </div>
+                    <div class="baseline-item">
+                        <div class="baseline-label">Cappuccino</div>
+                        <div class="baseline-value">${formatCurrency(us.metrics.coffee_cappuccino.usd, 'USD')}</div>
+                    </div>
+                    <div class="baseline-item">
+                        <div class="baseline-label">Sandwich (lunch)</div>
+                        <div class="baseline-value">${formatCurrency(us.metrics.sandwich_lunch.usd, 'USD')}</div>
+                    </div>
+                    <div class="baseline-item">
+                        <div class="baseline-label">Haircut</div>
+                        <div class="baseline-value">${formatCurrency(us.metrics.haircut_mens.usd, 'USD')}</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Render metrics
+        function renderMetrics() {
+            const grid = document.getElementById('metricsGrid');
+            const country = costData[selectedCountryIndex];
+            const metrics = [
+                { key: 'rent_monthly', label: 'Rent (monthly)' },
+                { key: 'coffee_cappuccino', label: 'Cappuccino' },
+                { key: 'sandwich_lunch', label: 'Sandwich (lunch)' },
+                { key: 'haircut_mens', label: 'Haircut' }
+            ];
+
+            grid.innerHTML = '';
+
+            // Individual metric cards
+            metrics.forEach((metric, index) => {
+                const metricData = country.metrics[metric.key];
+                const delta = calculateDelta(metric.key);
+                const displayValue = showLocalCurrency && metricData.local.currency !== 'USD' 
+                    ? metricData.local.amount 
+                    : metricData.usd;
+                const displayCurrency = showLocalCurrency && metricData.local.currency !== 'USD' 
+                    ? metricData.local.currency 
+                    : 'USD';
+
+                const card = document.createElement('div');
+                card.className = 'metric-card';
+                card.innerHTML = `
+                    <div class="metric-title">${metric.label}</div>
+                    <div class="metric-value" data-value="${displayValue}" data-currency="${displayCurrency}">
+                        ${formatCurrency(0, displayCurrency)}
+                    </div>
+                    ${showLocalCurrency && metricData.local.currency !== 'USD' ? 
+                        `<div class="metric-secondary">${formatCurrency(metricData.usd, 'USD')}</div>` : 
+                        ''
+                    }
+                    <div class="metric-badge ${getDeltaColorClass(delta)}">
+                        ${formatDelta(delta)}
+                    </div>
+                `;
+                
+                grid.appendChild(card);
+
+                // Animate card entrance
+                setTimeout(() => {
+                    card.classList.add('animate-in');
+                    
+                    // Animate value count-up
+                    const valueElement = card.querySelector('.metric-value');
+                    animateValue(valueElement, 0, displayValue, 800);
+                    
+                    // Animate badge
+                    setTimeout(() => {
+                        card.querySelector('.metric-badge').classList.add('animate-in');
+                    }, 300);
+                }, index * 100);
+            });
+
+            // Overall cost card
+            const overallCard = document.createElement('div');
+            const overallIndex = country.metrics.overall_index_vs_us;
+            const overallClass = overallIndex < 0 ? 'cheaper' : overallIndex > 0 ? 'expensive' : '';
+            
+            overallCard.className = `metric-card overall-card ${overallClass}`;
+            overallCard.innerHTML = `
+                <div class="metric-title">Overall cost of living</div>
+                <div class="overall-content">
+                    <div>
+                        <div class="overall-text">
+                            ${overallIndex === 0 ? 'Same as U.S.' : 
+                              overallIndex < 0 ? `${Math.abs(overallIndex)}% cheaper vs U.S.` : 
+                              `${overallIndex}% more vs U.S.`}
+                        </div>
+                        <div class="overall-subtitle">Compared to United States baseline</div>
+                    </div>
+                    <div class="overall-flag" style="font-size: 2.5rem;">${country.flag}</div>
+                </div>
+            `;
+            
+            grid.appendChild(overallCard);
+
+            // Animate overall card
+            setTimeout(() => {
+                overallCard.classList.add('animate-in');
+                
+                // Animate flag rotation
+                setTimeout(() => {
+                    overallCard.querySelector('.overall-flag').classList.add('animate');
+                }, 500);
+            }, 400);
+        }
+
+        // Update display
+        function updateDisplay() {
+            updateSlider();
+            renderCountries();
+            renderMetrics();
+        }
+
+        // Event listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initial render
+            renderBaseline();
+            updateDisplay();
+
+            // Currency toggle
+            document.querySelectorAll('.currency-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('.currency-btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    showLocalCurrency = this.dataset.currency === 'local';
+                    updateDisplay();
+                });
+            });
+
+            // Country selection
+            document.getElementById('countriesGrid').addEventListener('click', function(e) {
+                const btn = e.target.closest('.country-btn');
+                if (btn) {
+                    selectedCountryIndex = parseInt(btn.dataset.index);
+                    updateDisplay();
+                }
+            });
+
+            // Keyboard navigation
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'ArrowLeft') {
+                    e.preventDefault();
+                    selectedCountryIndex = Math.max(0, selectedCountryIndex - 1);
+                    updateDisplay();
+                } else if (e.key === 'ArrowRight') {
+                    e.preventDefault();
+                    selectedCountryIndex = Math.min(costData.length - 1, selectedCountryIndex + 1);
+                    updateDisplay();
+                } else if (e.key === 'Escape') {
+                    e.preventDefault();
+                    showTooltip = false;
+                    document.getElementById('tooltip').classList.remove('show');
+                }
+            });
+
+            // Tooltip
+            const infoBtn = document.getElementById('infoBtn');
+            const tooltip = document.getElementById('tooltip');
+            
+            infoBtn.addEventListener('click', function() {
+                showTooltip = !showTooltip;
+                tooltip.classList.toggle('show', showTooltip);
+            });
+
+            // Close tooltip when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!infoBtn.contains(e.target) && !tooltip.contains(e.target)) {
+                    showTooltip = false;
+                    tooltip.classList.remove('show');
+                }
+            });
+        });
+    </script>
+</body>
 </html>
+
